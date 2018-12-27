@@ -11,7 +11,7 @@ import org.apache.maven.project.MavenProject;
 import java.io.File;
 import java.io.IOException;
 
-@Mojo(name = "streamConvert", requiresProject = false, defaultPhase = LifecyclePhase.PROCESS_TEST_RESOURCES)
+@Mojo(name = "streamConvert", requiresProject = false, defaultPhase = LifecyclePhase.COMPILE)
 public class StreamConvertMojo extends AbstractMojo {
 
 
@@ -64,14 +64,11 @@ public class StreamConvertMojo extends AbstractMojo {
             return;
         }
 
-        String groupId = this.project.getGroupId();
-        StreamContractDownloader streamContractDownloader = new StreamContractDownloader(targetContractDirectory,groupId,
-                remoteUrl, providers, consumers, urls);
-        try {
-            streamContractDownloader.download();
-        } catch (IOException e) {
-            throw new MojoFailureException(e.getMessage(), e.getCause());
-        }
+
+        new StreamContractDownloader(targetContractDirectory, this.project.getGroupId(),
+                remoteUrl,
+                providers, consumers, urls)
+                .download();
 
 
     }

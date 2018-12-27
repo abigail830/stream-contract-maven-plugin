@@ -3,6 +3,8 @@ package com.github.abigail830.contract.maven.plugin;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.apache.commons.io.FileUtils;
+import org.apache.maven.plugin.MojoFailureException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +36,7 @@ public class StreamContractDownloader {
         this.groupId = groupId;
     }
 
-    public void download() throws IOException {
+    public void download() throws MojoFailureException {
         if(!shouldDownloadContracts()){
             log.warn("Either targetContractDirectory or remoteUrl are missing " +
                     "while they should be mandatory for trigger streamConvert goal.");
@@ -42,9 +44,11 @@ public class StreamContractDownloader {
         }
 
         log.info("Going to start download contract");
-        File targetDir = prepareTargetRootDirectory(this.targetContractDirectory);
-        String downloadContractsJson = downloadContractToFile();
-        writeJsonToContractFiles(targetDir, downloadContractsJson );
+
+        writeJsonToContractFiles(prepareTargetRootDirectory(
+                this.targetContractDirectory),
+                downloadContractToFile()
+        );
 
     }
 
@@ -73,33 +77,26 @@ public class StreamContractDownloader {
 
     }
 
-    private void writeJsonToContractFiles(File targetdir, String downloadContractsJson) throws IOException {
+    private void writeJsonToContractFiles(File targetdir, String downloadContractsJson) throws MojoFailureException {
         Gson gson = new Gson();
         ArrayList<Contract> contractArrayList = gson.fromJson(downloadContractsJson,
                 new TypeToken<List<Contract>>(){}.getType());
 
-        FileWriter fileWriter=null;
         try{
             for(Contract contract : contractArrayList) {
+
                 File contractFile = createContractFile(
                         this.targetContractDirectory + "/" +
                                 contract.getProvider() + "/" +
                                 contract.getConsumer() + "/" +
                                 contract.getName());
-                fileWriter = new FileWriter(contractFile, false);
-                fileWriter.write(contract.getContent());
-                fileWriter.flush();
+                FileUtils.writeStringToFile(contractFile, contract.getContent(), "UTF-8", false);
+
             }
 
         } catch (IOException e) {
             log.warn("Fail to write contract to target Directory.");
-            throw e;
-        }finally{
-            try{
-                fileWriter.close();
-            } catch (IOException e) {
-                log.warn("Fail to close file writer when generate contract.");
-            }
+            throw new MojoFailureException(e.getMessage(), e.getCause());
         }
 
 

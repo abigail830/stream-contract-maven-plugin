@@ -3,6 +3,7 @@
 		<pluginExecution>
 			<pluginExecutionFilter>
 				<goals>
+					<goal>cleanContract</goal>
 					<goal>streamConvert</goal>
 				</goals>
 			</pluginExecutionFilter>

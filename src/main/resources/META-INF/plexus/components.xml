@@ -12,6 +12,9 @@
 				</phases>
 				<default-phases>
 					<process-test-resources>
+						com.github.abigail830:stream-contract-maven-plugin:${project.version}:cleanContract
+					</process-test-resources>
+					<process-test-resources>
 						com.github.abigail830:stream-contract-maven-plugin:${project.version}:streamConvert
 					</process-test-resources>
 				</default-phases>
